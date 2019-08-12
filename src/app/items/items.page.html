@@ -1,0 +1,22 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Товары</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="10">
+        <ion-item>
+          <ion-input (ionChange)="onChange($event)" [(ngModel)]="barcode" type="text" placeholder="Код товара"></ion-input>
+        </ion-item>
+      </ion-col>
+      <ion-col size="2">
+        <ion-button (click)="scanBarcode()">
+          <ion-icon slot="icon-only" name="barcode"></ion-icon>
+        </ion-button>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

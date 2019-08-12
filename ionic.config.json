@@ -1,5 +1,7 @@
 {
   "name": "1c order",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }

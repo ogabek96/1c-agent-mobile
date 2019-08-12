@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/orders-form"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Клиенты</ion-title>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-searchbar placeholder="Поиск" (ionChange)="search($event)"></ion-searchbar>
+  </ion-toolbar>
+  <ion-progress-bar *ngIf="progressBarVisible" type="indeterminate"></ion-progress-bar>
+</ion-header>
+
+<ion-content>
+  <ion-list>
+    <ion-radio-group>
+      <ion-item *ngFor="let client of clientsSearchList" (click)="selectClient(client)">
+        <ion-label>{{ client.name }}</ion-label>
+        <ion-radio slot="start"></ion-radio>
+      </ion-item>
+    </ion-radio-group>
+  </ion-list>
+</ion-content>

@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Настройки</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding-top">
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col>
+        <ion-card>
+
+          <ion-card-header>
+            <ion-card-title>Данные авторизации</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+
+            <ion-item>
+              <ion-label position="stacked">IP адрес:</ion-label>
+              <ion-input (ionChange)="onChange()" [(ngModel)]="loginCredentials.ip"></ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Порт:</ion-label>
+              <ion-input (ionChange)="onChange()" [(ngModel)]="loginCredentials.port"></ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Имя базы данных:</ion-label>
+              <ion-input (ionChange)="onChange()" [(ngModel)]="loginCredentials.database"></ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Логин:</ion-label>
+              <ion-input (ionChange)="onChange()" [(ngModel)]="loginCredentials.username"></ion-input>
+            </ion-item>
+
+            <ion-item>
+              <ion-label position="stacked">Пароль:</ion-label>
+              <ion-input (ionChange)="onChange()" [(ngModel)]="loginCredentials.password" type="password"></ion-input>
+            </ion-item>
+
+            <ion-button (click)="checkCredentials()" expand="block">
+              Проверить подключения
+            </ion-button>
+
+            <ion-button (click)="save()" [disabled]="!saveButtonEnabled" expand="block">
+              Сохранить
+            </ion-button>
+          </ion-card-content>
+
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+
+</ion-content>
