@@ -8,11 +8,14 @@ import { ApiService } from '../providers/api.service';
 export class ItemsService {
   constructor(private apiService: ApiService) { }
 
-  async getItems(code) {
-    this.apiService.request({
+  async getItem(code) {
+    return this.apiService.request({
       url: '/prod',
       method: 'post',
       data: code.length >= 8 ? { barcode: code } : { code }
-    });
+    })
+      .then((res) => {
+        return JSON.parse(res.data);
+      });
   }
 }

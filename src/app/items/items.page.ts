@@ -26,10 +26,4 @@ export class ItemsPage implements OnInit {
         console.log(e);
       });
   }
-  onChange(event) {
-    this.itemsService.getItems(event.target.value)
-      .then(res => {
-        console.log(res);
-      });
-  }
 }
