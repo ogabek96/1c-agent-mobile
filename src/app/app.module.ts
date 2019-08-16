@@ -10,6 +10,7 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 
 import { HTTP } from '@ionic-native/http/ngx';
+import { SQLite } from '@ionic-native/sqlite/ngx';
 import { ToastController } from '@ionic/angular';
 import { IonicStorageModule } from '@ionic/storage';
 
@@ -26,6 +27,7 @@ import { IonicStorageModule } from '@ionic/storage';
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     HTTP,
+    SQLite,
     ToastController
   ],
   bootstrap: [AppComponent]
