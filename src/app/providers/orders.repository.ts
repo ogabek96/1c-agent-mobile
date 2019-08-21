@@ -20,7 +20,8 @@ export class OrdersRepository {
           client TEXT NOT NULL,
           totalCost REAL NOT NULL,
           items TEXT NOT NULL,
-        );`, []);
+          date INTEGER NOT NULL,
+          isUploaded BOOLEAN NOT NULL);`, []);
       })
       .then(() => {
         this.eventEmitterService.dbReady();
@@ -37,18 +38,27 @@ export class OrdersRepository {
   public async findByPk(id): Promise<Order> {
     return this.db.executeSql('SELECT * FROM orders WHERE id = ' + id, [])
       .then(res => {
-        return res.rows.item(0);
+        const order = res.rows.item(0);
+        order.client = JSON.parse(order.client);
+        order.items = JSON.parse(order.items);
+        console.log(order);
+        return order;
       });
   }
 
   public async findAll(): Promise<Order[]> {
     return this.db.executeSql('SELECT * FROM orders', [])
       .then(res => {
-        const orders: Order[] = [];
+        let orders = [];
         for (let i = 0; i < res.rows.length; i++) {
           orders.push(res.rows.item(i));
         }
-        return orders;
+        orders = orders.map(order => {
+          order.client = JSON.parse(order.client);
+          order.items = JSON.parse(order.items);
+          return order;
+        });
+        return orders as Order[];
       });
   }
 
@@ -60,16 +70,21 @@ export class OrdersRepository {
   }
 
   public async create(order: Order): Promise<Order> {
-    return this.db.executeSql(`INSERT INTO orders(client, totalCost, items, date)
-     VALUES ("${order.client}", ${order.totalCost}, "${order.items}", "${order.date}")`, [])
+    return this.db.executeSql(`INSERT INTO orders(client, totalCost, items, date, isUploaded)
+     VALUES ('${JSON.stringify(order.client)}', ${order.totalCost}, '${JSON.stringify(order.items)}',
+     "${order.date}", "${order.isUploaded}")`, [])
       .then(res => {
-        return res.rows.item(0);
+        return order;
       });
   }
 
   public async update(order: Order): Promise<Order> {
-    const q = `UPDATE orders SET client = "${order.client}", totalCost = ${order.totalCost},
-    date = ${order.date} WHERE id = ${order.id}`;
+    const q = `UPDATE orders SET
+    client = "${order.client}",
+    totalCost = ${order.totalCost},
+    date = ${order.date},
+    isUploaded = ${order.isUploaded}
+    WHERE id = ${order.id}`;
     return this.db.executeSql(q, [])
       .then(res => {
         return res;

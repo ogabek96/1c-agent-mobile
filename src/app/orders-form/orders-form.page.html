@@ -22,9 +22,8 @@
 
   <ion-item>
     <ion-label>Выбрать цену из:</ion-label>
-    <ion-select [(ngModel)]="selectedPrice" placeholder="Выберите">
-      <ion-select-option value="0">Закупочная</ion-select-option>
-      <ion-select-option value="1">Розничная</ion-select-option>
+    <ion-select [(ngModel)]="selectedPriceType" placeholder="Выберите">
+      <ion-select-option *ngFor="let priceType of priceTypes; let i=index" [value]="i">{{priceType}}</ion-select-option>
     </ion-select>
   </ion-item>
 
@@ -38,7 +37,7 @@
           <ion-col size="10">
             <ion-item>
               <ion-label position="stacked">Код товара</ion-label>
-              <ion-input type="text" [(ngModel)]="addItemCode"></ion-input>
+              <ion-input type="number" [(ngModel)]="addItemCode" (keyup.enter)="addItem()"></ion-input>
             </ion-item>
           </ion-col>
           <ion-col size="2">
@@ -67,7 +66,7 @@
                 <ion-grid fixed>
                   <ion-row>
                     <ion-col size="12">
-                      Цена: {{item.prices[selectedPrice].price}}
+                      Цена: {{item.prices[selectedPriceType].price}}
                     </ion-col>
                     <ion-col size="12">
                       В складе сталось: {{ item.remain[0].qty + item.remain[1].qty - item.count }}
@@ -101,20 +100,21 @@
       <ion-card-subtitle>Действия</ion-card-subtitle>
     </ion-card-header>
     <ion-card-content class="ion-no-padding">
-      <ion-grid fixed>
-        <ion-row align-items-center>
-          <ion-col>
-            <ion-button size="small" color="light">
+      <ion-grid>
+        <ion-row>
+          <ion-col size="4">
+            <ion-button size="small" expand="block" color="light" [routerLink]="['/orders']">
               Отмена
             </ion-button>
           </ion-col>
-          <ion-col>
-            <ion-button size="small" color="warning">
+          <ion-col size="4">
+            <ion-button size="small" expand="block" color="warning" (click)="saveAsDraft()"
+              [disabled]="isEdit || isView">
               В черновик
             </ion-button>
           </ion-col>
-          <ion-col>
-            <ion-button size="small" color="primary">
+          <ion-col size="4">
+            <ion-button size="small" expand="block" color="primary" (click)="saveOrder()" [disabled]="isView">
               Добавить
             </ion-button>
           </ion-col>
@@ -123,3 +123,9 @@
     </ion-card-content>
   </ion-card>
 </ion-content>
+
+<ion-footer>
+  <ion-toolbar>
+    <ion-title>Полная цена: {{totalCost}}</ion-title>
+  </ion-toolbar>
+</ion-footer>

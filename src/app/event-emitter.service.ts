@@ -12,6 +12,8 @@ export class EventEmitterService {
   dbReady() {
     this.change.emit(true);
   }
-
+  dbChange() {
+    this.change.emit(true);
+  }
   constructor() { }
 }

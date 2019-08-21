@@ -1,4 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { LoadingController } from '@ionic/angular';
+
+import { SQLite } from '@ionic-native/sqlite/ngx';
+
 import { ActivatedRoute, Router } from '@angular/router';
 import { BarcodeScanner } from '@ionic-native/barcode-scanner/ngx';
 
@@ -6,6 +10,12 @@ import { Client } from '../models/client';
 
 import { ItemsService } from '../items/items.service';
 import { ToastService } from '../providers/toast.service';
+import { EventEmitterService } from '../event-emitter.service';
+import { OrdersService } from '../orders/orders.service';
+import { ClientsService } from '../clients/clients.service';
+
+import { OrdersRepository } from '../providers/orders.repository';
+import { Order } from '../models/order';
 
 @Component({
   selector: 'app-orders-form',
@@ -13,26 +23,46 @@ import { ToastService } from '../providers/toast.service';
   styleUrls: ['./orders-form.page.scss'],
 })
 export class OrdersFormPage implements OnInit {
+  ordersRespository: OrdersRepository;
+  orderId;
+  isEdit = false;
+  isView = false;
   selectedClient: Client;
-  selectedPrice: number;
+  selectedPriceType: number;
+  priceTypes: [];
   addItemCode: number;
   addItemLoading = false;
   addedItems = [];
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private barcodeScanner: BarcodeScanner,
+    public loadingController: LoadingController,
     private itemsService: ItemsService,
-    private toastService: ToastService) {
+    private toastService: ToastService,
+    private ordersService: OrdersService,
+    private clientService: ClientsService,
+    private sqlite: SQLite,
+    private eventEmitterService: EventEmitterService) {
     this.route.queryParams.subscribe(params => {
       if (this.router.getCurrentNavigation().extras.state) {
         this.selectedClient = this.router.getCurrentNavigation().extras.state.client;
       }
     });
+    this.ordersRespository = OrdersRepository.getInstance(this.sqlite, this.eventEmitterService);
   }
 
   async ngOnInit() {
-
+    this.orderId = this.route.snapshot.queryParams.orderId;
+    if (this.orderId) {
+      await this.fillForm(this.orderId);
+    }
+    console.log(this.orderId);
+    await this.clientService.getPriceTypes()
+      .then(res => {
+        this.priceTypes = res;
+      });
   }
   async scanBarcode() {
     this.addItemCode = null;
@@ -63,6 +93,7 @@ export class OrdersFormPage implements OnInit {
           foundItem.count++;
         } else {
           this.addedItems.push(res.result);
+          this.addItemCode = null;
         }
       })
       .catch(e => {
@@ -85,5 +116,100 @@ export class OrdersFormPage implements OnInit {
   deleteItem(item) {
     const index = this.addedItems.indexOf(item);
     this.addedItems.splice(index, 1);
+  }
+
+  async saveOrder() {
+    switch (true) {
+      case !this.selectedClient:
+        await this.toastService.error('Клиент не выбран.');
+        return;
+      case !this.selectedPriceType:
+        await this.toastService.error('Тип цены не выбран.');
+        return;
+      case this.addedItems.length < 1:
+        await this.toastService.error('Вы не добавили товар.');
+        return;
+    }
+    const loading = await this.loadingController.create({
+      message: 'Сохранение данных'
+    });
+    await loading.present();
+    return this.ordersService.saveOrder({
+      type: 'sale',
+      client: this.selectedClient.code,
+      stock: null,
+      details: this.addedItems.map(itm => {
+        return {
+          code: itm.code,
+          qty: itm.count,
+          total: this.totalCost
+        };
+      })
+    })
+      .then(() => {
+        return this.ordersRespository.create({
+          client: this.selectedClient,
+          totalCost: this.totalCost,
+          items: this.addedItems,
+          date: new Date().getTime() / 1000,
+          isUploaded: true
+        })
+          .then(() => {
+            this.router.navigateByUrl('/orders');
+            this.eventEmitterService.dbChange();
+          });
+      })
+      .catch(async () => {
+        await this.loadingController.dismiss();
+        await this.toastService.error('Ошибка в сохранении данных.Повторите попытку.');
+      })
+      .finally(async () => {
+        await this.loadingController.dismiss();
+      });
+  }
+  get totalCost() {
+    return this.addedItems.reduce((total, itm) => {
+      return total + itm.count * itm.prices[this.selectedPriceType].price;
+    }, 0).toFixed(2);
+  }
+  async saveAsDraft() {
+    switch (true) {
+      case !this.selectedClient:
+        await this.toastService.error('Клиент не выбран.');
+        return;
+      case !this.selectedPriceType:
+        await this.toastService.error('Тип цены не выбран.');
+        return;
+      case this.addedItems.length < 1:
+        await this.toastService.error('Вы не добавили товар.');
+        return;
+    }
+    const loading = await this.loadingController.create({
+      message: 'Сохранение данных'
+    });
+    await loading.present();
+    return this.ordersRespository.create({
+      client: this.selectedClient,
+      totalCost: this.totalCost,
+      items: this.addedItems,
+      date: new Date().getTime() / 1000,
+      isUploaded: false
+    })
+      .then(() => {
+        this.router.navigateByUrl('/orders');
+        this.eventEmitterService.dbChange();
+      })
+      .finally(async () => {
+        await loading.dismiss();
+      });
+  }
+  async fillForm(orderId) {
+    this.isEdit = true;
+    await this.ordersRespository.findByPk(orderId)
+      .then((order: Order) => {
+        this.selectedClient = order.client;
+        this.addedItems = order.items;
+        this.isView = order.isUploaded;
+      });
   }
 }

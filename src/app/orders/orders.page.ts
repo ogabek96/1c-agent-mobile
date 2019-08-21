@@ -12,7 +12,7 @@ import { Order } from '../models/order';
 
 export class OrdersPage implements OnInit {
   ordersRespository: OrdersRepository;
-  ordersList: Order[];
+  ordersList: Order[] = [];
   constructor(private sqlite: SQLite, private eventEmitterService: EventEmitterService) {
     this.ordersRespository = OrdersRepository.getInstance(this.sqlite, this.eventEmitterService);
   }
@@ -22,7 +22,15 @@ export class OrdersPage implements OnInit {
       this.ordersRespository.findAll()
         .then(orders => {
           this.ordersList = orders;
+          console.log(this.ordersList);
         });
     });
+  }
+
+  deleteOrder(orderId) {
+    return this.ordersRespository.deleteByPk(orderId)
+      .then(() => {
+        return this.eventEmitterService.dbChange();
+      });
   }
 }

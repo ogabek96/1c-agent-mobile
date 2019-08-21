@@ -17,7 +17,16 @@ export class ClientsService {
       method: 'post'
     })
       .then((res) => {
-        return JSON.parse(res.data) as Client[];
+        return JSON.parse(res.data).clients as Client[];
+      });
+  }
+  async getPriceTypes() {
+    return this.apiService.request({
+      url: '/client',
+      method: 'post'
+    })
+      .then((res) => {
+        return JSON.parse(res.data).prices;
       });
   }
 }

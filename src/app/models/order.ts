@@ -6,5 +6,6 @@ export interface Order {
   client: Client;
   totalCost: number;
   items: Item[];
-  date: Date;
+  date: number;
+  isUploaded: boolean;
 }
