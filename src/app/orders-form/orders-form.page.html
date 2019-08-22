@@ -3,14 +3,17 @@
     <ion-buttons slot="start">
       <ion-back-button defaultHref="/orders"></ion-back-button>
     </ion-buttons>
-    <ion-title>Добавить заказ</ion-title>
+    <ion-title *ngIf="isView===true">Просмотр заказа</ion-title>
+    <ion-title *ngIf="isEdit">Редактирования заказа</ion-title>
+    <ion-title *ngIf="!isView && !isEdit">Добавить заказ</ion-title>
   </ion-toolbar>
+  <ion-progress-bar *ngIf="progressBarVisible" type="indeterminate"></ion-progress-bar>
 </ion-header>
 
 <ion-content>
   <ion-item>
     <ion-label>Клиент:</ion-label>
-    <ion-button [routerLink]="['/clients']">
+    <ion-button [routerLink]="['/clients']" [disabled]="isView">
       <ng-container *ngIf="selectedClient; else selectedClientElse">
         {{selectedClient.name}}
       </ng-container>
@@ -22,7 +25,7 @@
 
   <ion-item>
     <ion-label>Выбрать цену из:</ion-label>
-    <ion-select [(ngModel)]="selectedPriceType" placeholder="Выберите">
+    <ion-select [(ngModel)]="selectedPriceType" placeholder="Выберите" [disabled]="isView">
       <ion-select-option *ngFor="let priceType of priceTypes; let i=index" [value]="i">{{priceType}}</ion-select-option>
     </ion-select>
   </ion-item>
@@ -36,12 +39,12 @@
         <ion-row>
           <ion-col size="10">
             <ion-item>
-              <ion-label position="stacked">Код товара</ion-label>
+              <ion-label position="stacked">Введите код товара:</ion-label>
               <ion-input type="number" [(ngModel)]="addItemCode" (keyup.enter)="addItem()"></ion-input>
             </ion-item>
           </ion-col>
           <ion-col size="2">
-            <ion-button (click)="addItem()">
+            <ion-button (click)="addItem()" [disabled]="isView">
               <ng-container *ngIf="addItemLoading; else notLoading">
                 <ion-spinner></ion-spinner>
               </ng-container>
@@ -52,7 +55,7 @@
           </ion-col>
         </ion-row>
       </ion-grid>
-      <ion-button (click)="scanBarcode()">
+      <ion-button (click)="scanBarcode()" [disabled]="isView">
         <ion-icon slot="start" name="barcode"></ion-icon>Сканировать штрих код
       </ion-button>
       <ion-list>
@@ -72,11 +75,11 @@
                       В складе сталось: {{ item.remain[0].qty + item.remain[1].qty - item.count }}
                     </ion-col>
                     <ion-col size="12">
-                      Количество: <ion-button (click)="decQnty(item)">
+                      Количество: <ion-button (click)="decQnty(item)" [disabled]="isView">
                         <ion-icon slot="icon-only" name="remove"></ion-icon>
                       </ion-button>
                       {{item.count}}
-                      <ion-button (click)="incQnty(item)">
+                      <ion-button (click)="incQnty(item)" [disabled]="isView">
                         <ion-icon slot="icon-only" name="add"></ion-icon>
                       </ion-button>
                     </ion-col>
@@ -126,6 +129,6 @@
 
 <ion-footer>
   <ion-toolbar>
-    <ion-title>Полная цена: {{totalCost}}</ion-title>
+    <ion-title>Общая цена: {{totalCost}}</ion-title>
   </ion-toolbar>
 </ion-footer>

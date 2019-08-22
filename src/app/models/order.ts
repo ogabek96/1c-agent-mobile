@@ -7,5 +7,6 @@ export interface Order {
   totalCost: number;
   items: Item[];
   date: number;
+  priceType: number;
   isUploaded: boolean;
 }

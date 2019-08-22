@@ -23,12 +23,13 @@ import { Order } from '../models/order';
   styleUrls: ['./orders-form.page.scss'],
 })
 export class OrdersFormPage implements OnInit {
+  progressBarVisible = true;
   ordersRespository: OrdersRepository;
   orderId;
   isEdit = false;
   isView = false;
   selectedClient: Client;
-  selectedPriceType: number;
+  selectedPriceType: number = undefined;
   priceTypes: [];
   addItemCode: number;
   addItemLoading = false;
@@ -58,11 +59,11 @@ export class OrdersFormPage implements OnInit {
     if (this.orderId) {
       await this.fillForm(this.orderId);
     }
-    console.log(this.orderId);
     await this.clientService.getPriceTypes()
       .then(res => {
         this.priceTypes = res;
       });
+    this.progressBarVisible = false;
   }
   async scanBarcode() {
     this.addItemCode = null;
@@ -117,13 +118,12 @@ export class OrdersFormPage implements OnInit {
     const index = this.addedItems.indexOf(item);
     this.addedItems.splice(index, 1);
   }
-
   async saveOrder() {
     switch (true) {
       case !this.selectedClient:
         await this.toastService.error('Клиент не выбран.');
         return;
-      case !this.selectedPriceType:
+      case !this.selectedPriceType === undefined:
         await this.toastService.error('Тип цены не выбран.');
         return;
       case this.addedItems.length < 1:
@@ -152,11 +152,16 @@ export class OrdersFormPage implements OnInit {
           totalCost: this.totalCost,
           items: this.addedItems,
           date: new Date().getTime() / 1000,
+          priceType: this.selectedPriceType,
           isUploaded: true
         })
-          .then(() => {
+          .then(async () => {
+            if (this.isEdit) {
+              await this.ordersRespository.deleteByPk(this.orderId);
+            }
             this.router.navigateByUrl('/orders');
             this.eventEmitterService.dbChange();
+            await this.toastService.message('Заказ успешно создан.', 'success', 'middle');
           });
       })
       .catch(async () => {
@@ -177,7 +182,7 @@ export class OrdersFormPage implements OnInit {
       case !this.selectedClient:
         await this.toastService.error('Клиент не выбран.');
         return;
-      case !this.selectedPriceType:
+      case this.selectedPriceType === undefined:
         await this.toastService.error('Тип цены не выбран.');
         return;
       case this.addedItems.length < 1:
@@ -193,23 +198,32 @@ export class OrdersFormPage implements OnInit {
       totalCost: this.totalCost,
       items: this.addedItems,
       date: new Date().getTime() / 1000,
+      priceType: this.selectedPriceType,
       isUploaded: false
     })
-      .then(() => {
+      .then(async () => {
         this.router.navigateByUrl('/orders');
         this.eventEmitterService.dbChange();
+        await this.toastService.message('Заказ успешно сохранен в черновик.', 'dark', 'middle');
+      })
+      .catch(e => {
+        console.log(e);
       })
       .finally(async () => {
         await loading.dismiss();
       });
   }
   async fillForm(orderId) {
-    this.isEdit = true;
     await this.ordersRespository.findByPk(orderId)
       .then((order: Order) => {
         this.selectedClient = order.client;
+        this.selectedPriceType = order.priceType;
         this.addedItems = order.items;
-        this.isView = order.isUploaded;
+        if (order.isUploaded) {
+          this.isView = true;
+        } else {
+          this.isEdit = true;
+        }
       });
   }
 }

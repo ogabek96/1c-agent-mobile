@@ -21,6 +21,7 @@ export class OrdersRepository {
           totalCost REAL NOT NULL,
           items TEXT NOT NULL,
           date INTEGER NOT NULL,
+          priceType INTEGER NOT NULL,
           isUploaded BOOLEAN NOT NULL);`, []);
       })
       .then(() => {
@@ -41,8 +42,7 @@ export class OrdersRepository {
         const order = res.rows.item(0);
         order.client = JSON.parse(order.client);
         order.items = JSON.parse(order.items);
-        console.log(order);
-        return order;
+        return order as Order;
       });
   }
 
@@ -70,9 +70,9 @@ export class OrdersRepository {
   }
 
   public async create(order: Order): Promise<Order> {
-    return this.db.executeSql(`INSERT INTO orders(client, totalCost, items, date, isUploaded)
+    return this.db.executeSql(`INSERT INTO orders(client, totalCost, items, date, priceType, isUploaded)
      VALUES ('${JSON.stringify(order.client)}', ${order.totalCost}, '${JSON.stringify(order.items)}',
-     "${order.date}", "${order.isUploaded}")`, [])
+     "${order.date}", "${order.priceType}", ${order.isUploaded})`, [])
       .then(res => {
         return order;
       });
@@ -83,6 +83,7 @@ export class OrdersRepository {
     client = "${order.client}",
     totalCost = ${order.totalCost},
     date = ${order.date},
+    priceType = ${order.priceType},
     isUploaded = ${order.isUploaded}
     WHERE id = ${order.id}`;
     return this.db.executeSql(q, [])

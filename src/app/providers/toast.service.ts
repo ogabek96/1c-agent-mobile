@@ -28,4 +28,15 @@ export class ToastService {
     });
     toast.present();
   }
+
+  async message(text: string, color: string, position) {
+    const toast = await this.toastController.create({
+      message: text,
+      animated: true,
+      color,
+      position,
+      duration: 2000
+    });
+    toast.present();
+  }
 }
