@@ -54,6 +54,7 @@ export class SettingsPage implements OnInit {
         this.saveButtonEnabled = true;
       }
     } catch (e) {
+      console.log(e);
       switch (e.status) {
         case -1:
           this.toastService.error('Ошибка в подключения к интернету.Проверте доступ к интернету.');

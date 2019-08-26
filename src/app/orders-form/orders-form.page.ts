@@ -146,12 +146,14 @@ export class OrdersFormPage implements OnInit {
         };
       })
     })
-      .then(() => {
+      .then((order) => {
+        console.log(order);
         return this.ordersRespository.create({
+          orderNumber: order.docNo,
           client: this.selectedClient,
           totalCost: this.totalCost,
           items: this.addedItems,
-          date: new Date().getTime() / 1000,
+          date: new Date().getTime(),
           priceType: this.selectedPriceType,
           isUploaded: true
         })
@@ -194,10 +196,11 @@ export class OrdersFormPage implements OnInit {
     });
     await loading.present();
     return this.ordersRespository.create({
+      orderNumber: '',
       client: this.selectedClient,
       totalCost: this.totalCost,
       items: this.addedItems,
-      date: new Date().getTime() / 1000,
+      date: new Date().getTime(),
       priceType: this.selectedPriceType,
       isUploaded: false
     })
@@ -216,6 +219,7 @@ export class OrdersFormPage implements OnInit {
   async fillForm(orderId) {
     await this.ordersRespository.findByPk(orderId)
       .then((order: Order) => {
+        console.log(order);
         this.selectedClient = order.client;
         this.selectedPriceType = order.priceType;
         this.addedItems = order.items;

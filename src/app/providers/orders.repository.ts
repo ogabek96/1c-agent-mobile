@@ -17,6 +17,7 @@ export class OrdersRepository {
         return db.executeSql(`
           CREATE TABLE IF NOT EXISTS orders(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
+          orderNumber TEXT NOT NULL,
           client TEXT NOT NULL,
           totalCost REAL NOT NULL,
           items TEXT NOT NULL,
@@ -70,8 +71,8 @@ export class OrdersRepository {
   }
 
   public async create(order: Order): Promise<Order> {
-    return this.db.executeSql(`INSERT INTO orders(client, totalCost, items, date, priceType, isUploaded)
-     VALUES ('${JSON.stringify(order.client)}', ${order.totalCost}, '${JSON.stringify(order.items)}',
+    return this.db.executeSql(`INSERT INTO orders(orderNumber ,client, totalCost, items, date, priceType, isUploaded)
+     VALUES ("${order.orderNumber}", '${JSON.stringify(order.client)}', ${order.totalCost}, '${JSON.stringify(order.items)}',
      "${order.date}", "${order.priceType}", ${order.isUploaded})`, [])
       .then(res => {
         return order;
@@ -80,6 +81,7 @@ export class OrdersRepository {
 
   public async update(order: Order): Promise<Order> {
     const q = `UPDATE orders SET
+    orderNumber = "${order.orderNumber}",
     client = "${order.client}",
     totalCost = ${order.totalCost},
     date = ${order.date},

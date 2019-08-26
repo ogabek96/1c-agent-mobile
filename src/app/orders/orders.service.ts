@@ -14,6 +14,9 @@ export class OrdersService {
       url: '/docs',
       method: 'post',
       data
+    })
+    .then((res) => {
+      return JSON.parse(res.data);
     });
   }
 }
